@@ -100,3 +100,93 @@ resource "aws_route_table_association" "public" {
   subnet_id      = aws_subnet.public[count.index].id
   route_table_id = aws_route_table.public.id
 }
+
+resource "aws_security_group" "nat" {
+  name        = "nat-instance"
+  description = "SG for NAT Instance"
+  vpc_id      = aws_vpc.main.id
+
+  ingress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = [aws_vpc.main.cidr_block]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  lifecycle {
+    create_before_destroy = true
+  }
+
+  tags = {
+    Name = "nat-instance"
+  }
+}
+
+data "aws_ami" "nat" {
+  most_recent = true
+  owners      = ["568608671756"]
+  filter {
+    name   = "architecture"
+    values = ["arm64"]
+  }
+  filter {
+    name   = "name"
+    values = ["fck-nat-amzn2-hvm-1.2.1-*"]
+  }
+}
+
+resource "aws_instance" "nat" {
+  ami                         = data.aws_ami.nat.id
+  instance_type               = "t4g.nano"
+  associate_public_ip_address = true
+  ebs_optimized               = true
+  subnet_id                   = aws_subnet.public[0].id
+  source_dest_check           = false
+
+  vpc_security_group_ids = [aws_security_group.nat.id]
+
+  instance_market_options {
+    market_type = "spot"
+    spot_options {
+      max_price = 0.004
+    }
+  }
+
+  tags = {
+    Name = "nat-instance"
+  }
+}
+
+resource "aws_route_table" "private" {
+  vpc_id = aws_vpc.main.id
+
+  route {
+    cidr_block           = "0.0.0.0/0"
+    network_interface_id = aws_instance.nat.primary_network_interface_id
+  }
+
+  tags = {
+    Name = "rt-private"
+  }
+}
+
+resource "aws_route_table_association" "private_data" {
+  count = length(aws_subnet.data)
+
+  subnet_id      = aws_subnet.data[count.index].id
+  route_table_id = aws_route_table.private.id
+}
+
+resource "aws_route_table_association" "private_app" {
+  count = length(aws_subnet.app)
+
+  subnet_id      = aws_subnet.app[count.index].id
+  route_table_id = aws_route_table.private.id
+}
