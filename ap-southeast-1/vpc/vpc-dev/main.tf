@@ -20,6 +20,7 @@ resource "aws_subnet" "public" {
 
   tags = {
     Name = "subnet-public-${substr(local.availability_zones[count.index], -1, 1)}"
+    Tier = "public"
   }
 }
 
@@ -33,6 +34,7 @@ resource "aws_subnet" "data" {
 
   tags = {
     Name = "subnet-data-${substr(local.availability_zones[count.index], -1, 1)}"
+    Tier = "data"
   }
 }
 
@@ -46,6 +48,7 @@ resource "aws_subnet" "app" {
 
   tags = {
     Name = "subnet-app-${substr(local.availability_zones[count.index], -1, 1)}"
+    Tier = "app"
   }
 }
 
