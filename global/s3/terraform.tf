@@ -1,10 +1,10 @@
 terraform {
-  required_version = "~> 1.5.3"
+  required_version = "~> 1.5.4"
 
   backend "s3" {
     bucket         = "terraform-remote-backend-199944304157"
     dynamodb_table = "terraform-remote-backend-199944304157"
-    key            = "global/ci-cd/terraform.tfstate"
+    key            = "global/s3/terraform.tfstate"
     region         = "ap-southeast-1"
     encrypt        = true
   }

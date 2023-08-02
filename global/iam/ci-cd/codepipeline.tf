@@ -1,5 +1,3 @@
-### IAM ROLE ###
-
 resource "random_id" "codepipeline_role" {
   byte_length = 8
 
@@ -80,40 +78,7 @@ data "aws_iam_policy_document" "codepipeline_policy" {
     ]
 
     resources = [
-      "${aws_s3_bucket.codepipeline.arn}/*",
+      "${data.terraform_remote_state.global_s3.outputs.codepipeline_artifacts_arn}/*",
     ]
-  }
-}
-
-
-### S3 ARTIFACTS BUCKET ###
-
-resource "random_id" "codepipeline_artifacts" {
-  byte_length = 8
-
-  keepers = {
-    Target = "codepipeline-artifacts"
-  }
-
-  prefix = "codepipeline-artifacts-"
-}
-
-resource "aws_s3_bucket" "codepipeline" {
-  bucket = random_id.codepipeline_artifacts.hex
-}
-
-resource "aws_s3_bucket_lifecycle_configuration" "codepipeline" {
-  bucket = aws_s3_bucket.codepipeline.id
-
-  rule {
-    id     = "expiration-rule"
-    status = "Enabled"
-
-    filter {
-    }
-
-    expiration {
-      days = 3
-    }
   }
 }

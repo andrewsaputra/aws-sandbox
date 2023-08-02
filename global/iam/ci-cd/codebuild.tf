@@ -71,7 +71,7 @@ data "aws_iam_policy_document" "codebuild_policy" {
     ]
 
     resources = [
-      "${aws_s3_bucket.codepipeline.arn}/*",
+      "${data.terraform_remote_state.global_s3.outputs.codepipeline_artifacts_arn}/*",
     ]
   }
 }
