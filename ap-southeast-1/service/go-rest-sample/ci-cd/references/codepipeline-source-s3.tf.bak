@@ -1,0 +1,131 @@
+resource "aws_codepipeline" "pipeline" {
+  name     = "test-pipeline"
+  role_arn = aws_iam_role.codepipeline.arn
+
+  artifact_store {
+    location = aws_s3_bucket.codepipeline.bucket
+    type     = "S3"
+  }
+
+  stage {
+    name = "Source"
+
+    action {
+      name             = "SourceAction"
+      category         = "Source"
+      owner            = "AWS"
+      provider         = "S3"
+      version          = "1"
+      output_artifacts = ["SourceOutputArtifact"]
+
+      configuration = {
+        S3Bucket             = aws_s3_bucket.main.bucket
+        S3ObjectKey          = "go-rest-sample-ci/app.zip"
+        PollForSourceChanges = false
+      }
+    }
+  }
+
+#  stage {
+#    name = "Approval"
+#
+#    action {
+#      name     = "ApprovalAction"
+#      category = "Approval"
+#      owner    = "AWS"
+#      provider = "Manual"
+#      version  = "1"
+#    }
+#  }
+
+  stage {
+    name = "Deploy"
+
+    action {
+      name            = "DeployAction"
+      category        = "Deploy"
+      owner           = "AWS"
+      provider        = "CodeDeploy"
+      version         = "1"
+      input_artifacts = ["SourceOutputArtifact"]
+
+      configuration = {
+        ApplicationName     = aws_codedeploy_deployment_group.app.app_name
+        DeploymentGroupName = aws_codedeploy_deployment_group.app.deployment_group_name
+      }
+    }
+  }
+}
+
+
+resource "aws_iam_role" "eventbridge" {
+  name               = "iam-eventbridge"
+  assume_role_policy = data.aws_iam_policy_document.eventbridge_assume_role.json
+
+  inline_policy {
+    name   = "permissions"
+    policy = data.aws_iam_policy_document.eventbridge_policy.json
+  }
+}
+
+data "aws_iam_policy_document" "eventbridge_assume_role" {
+  statement {
+    effect = "Allow"
+
+    principals {
+      type        = "Service"
+      identifiers = ["events.amazonaws.com"]
+    }
+
+    actions = ["sts:AssumeRole"]
+  }
+}
+
+data "aws_iam_policy_document" "eventbridge_policy" {
+  statement {
+    effect = "Allow"
+
+    actions = [
+      "codepipeline:StartPipelineExecution",
+    ]
+
+    resources = [
+      aws_codepipeline.pipeline.arn
+    ]
+  }
+}
+
+resource "aws_s3_bucket_notification" "app" {
+  bucket      = aws_s3_bucket.main.bucket
+  eventbridge = true
+}
+
+resource "aws_cloudwatch_event_rule" "s3_event_rule" {
+  name_prefix = "test-s3-new-object-"
+
+  event_pattern = jsonencode({
+    source = [
+      "aws.s3"
+    ]
+    resources = [
+      aws_s3_bucket.main.arn
+    ]
+    detail-type = [
+      "Object Created"
+    ],
+    detail = {
+      object = {
+        key = [
+          "go-rest-sample-ci/app.zip"
+        ]
+      }
+    }
+  })
+}
+
+
+resource "aws_cloudwatch_event_target" "s3_event_target" {
+  rule     = aws_cloudwatch_event_rule.s3_event_rule.name
+  arn      = aws_codepipeline.pipeline.arn
+  role_arn = aws_iam_role.eventbridge.arn
+}
