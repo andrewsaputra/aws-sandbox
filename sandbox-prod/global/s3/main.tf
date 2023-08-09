@@ -1,36 +1,3 @@
-##############################
-### CODEPIPELINE ARTIFACTS ###
-
-resource "random_id" "codepipeline" {
-  byte_length = 8
-
-  keepers = {
-    Target = "codepipeline-artifacts"
-  }
-
-  prefix = "codepipeline-artifacts-"
-}
-
-resource "aws_s3_bucket" "codepipeline" {
-  bucket = random_id.codepipeline.hex
-}
-
-resource "aws_s3_bucket_lifecycle_configuration" "codepipeline" {
-  bucket = aws_s3_bucket.codepipeline.id
-
-  rule {
-    id     = "expiration-rule"
-    status = "Enabled"
-
-    filter {
-    }
-
-    expiration {
-      days = 3
-    }
-  }
-}
-
 ##########################
 ### LOAD BALANCER LOGS ###
 

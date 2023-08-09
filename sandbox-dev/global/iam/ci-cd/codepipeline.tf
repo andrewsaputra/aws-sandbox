@@ -81,4 +81,14 @@ data "aws_iam_policy_document" "codepipeline_policy" {
       "${data.terraform_remote_state.global_s3.outputs.codepipeline_artifacts_arn}/*",
     ]
   }
+
+  statement {
+    effect = "Allow"
+
+    actions = [
+      "sts:AssumeRole",
+    ]
+
+    resources = ["*"]
+  }
 }

@@ -11,6 +11,12 @@ locals {
     container    = "LINUX_CONTAINER"
   }
 
+  cd_production = {
+    cd_app_name           = "go-rest-sample-release"
+    cd_group_name         = "go-rest-sample-release-group"
+    cd_cross_account_role = "arn:aws:iam::958954650561:role/role-codedeploy-cross-account-dee75eeb7f56aaa8"
+  }
+
 
   remote_state_backend         = "s3"
   remote_state_bucket          = "terraform-remote-backend-199944304157"

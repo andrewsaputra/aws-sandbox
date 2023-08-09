@@ -54,7 +54,6 @@ data "aws_iam_policy_document" "codepipeline" {
 
     actions = [
       "s3:GetObject",
-      "s3:PutObject"
     ]
 
     resources = [

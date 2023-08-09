@@ -127,7 +127,7 @@ resource "aws_codepipeline" "pipeline" {
   }
 
   stage {
-    name = "Deploy"
+    name = "Deploy-Pre-Production"
 
     action {
       name            = "DeployAction"
@@ -141,6 +141,26 @@ resource "aws_codepipeline" "pipeline" {
         ApplicationName     = aws_codedeploy_deployment_group.release.app_name
         DeploymentGroupName = aws_codedeploy_deployment_group.release.deployment_group_name
       }
+    }
+  }
+
+  stage {
+    name = "Deploy-Production"
+
+    action {
+      name            = "DeployAction"
+      category        = "Deploy"
+      owner           = "AWS"
+      provider        = "CodeDeploy"
+      version         = "1"
+      input_artifacts = ["BuildOutputArtifact"]
+
+      configuration = {
+        ApplicationName     = local.cd_production.cd_app_name
+        DeploymentGroupName = local.cd_production.cd_group_name
+      }
+
+      role_arn = local.cd_production.cd_cross_account_role
     }
   }
 }
