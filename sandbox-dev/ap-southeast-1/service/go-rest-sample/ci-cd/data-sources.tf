@@ -17,6 +17,7 @@ locals {
   remote_state_region          = "ap-southeast-1"
   remote_state_key_global_s3   = "global/s3/terraform.tfstate"
   remote_state_key_global_cicd = "global/iam/ci-cd/terraform.tfstate"
+  remote_state_key_kms         = "ap-southeast-1/kms/terraform.tfstate"
 
 }
 
@@ -41,6 +42,16 @@ data "terraform_remote_state" "global_cicd" {
   config = {
     bucket = local.remote_state_bucket
     key    = local.remote_state_key_global_cicd
+    region = local.remote_state_region
+  }
+}
+
+data "terraform_remote_state" "kms" {
+  backend = local.remote_state_backend
+
+  config = {
+    bucket = local.remote_state_bucket
+    key    = local.remote_state_key_kms
     region = local.remote_state_region
   }
 }

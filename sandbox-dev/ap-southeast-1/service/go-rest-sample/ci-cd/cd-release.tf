@@ -81,8 +81,12 @@ resource "aws_codepipeline" "pipeline" {
   role_arn = data.terraform_remote_state.global_cicd.outputs.codepipeline_role_arn
 
   artifact_store {
-    location = data.terraform_remote_state.global_s3.outputs.codepipeline_artifacts_bucket
     type     = "S3"
+    location = data.terraform_remote_state.global_s3.outputs.codepipeline_artifacts_bucket
+    encryption_key {
+      id   = data.terraform_remote_state.kms.outputs.kms_cicd_arn
+      type = "KMS"
+    }
   }
 
   stage {
@@ -99,7 +103,7 @@ resource "aws_codepipeline" "pipeline" {
       configuration = {
         ConnectionArn    = aws_codestarconnections_connection.release.arn
         FullRepositoryId = local.repository_name
-        BranchName       = "main"
+        BranchName       = "test-release"
       }
     }
   }

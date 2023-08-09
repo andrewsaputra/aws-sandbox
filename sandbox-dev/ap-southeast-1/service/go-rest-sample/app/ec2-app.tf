@@ -82,6 +82,19 @@ data "aws_iam_policy_document" "app_policy" {
       "${data.terraform_remote_state.global_s3.outputs.codepipeline_artifacts_arn}/*",
     ]
   }
+
+  statement {
+    sid    = "UseKMS"
+    effect = "Allow"
+
+    actions = [
+      "kms:Decrypt",
+    ]
+
+    resources = [
+      data.terraform_remote_state.kms.outputs.kms_cicd_arn,
+    ]
+  }
 }
 
 

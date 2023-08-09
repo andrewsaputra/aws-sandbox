@@ -1,3 +1,15 @@
+##############
+### LOCALS ###
+
+locals {
+
+  cross_account_arns = [
+    "arn:aws:iam::958954650561:root",
+  ]
+
+}
+
+
 ##############################
 ### CODEPIPELINE ARTIFACTS ###
 
@@ -30,6 +42,32 @@ resource "aws_s3_bucket_lifecycle_configuration" "codepipeline" {
     }
   }
 }
+
+data "aws_iam_policy_document" "codepipeline" {
+  statement {
+    effect = "Allow"
+
+    principals {
+      type        = "AWS"
+      identifiers = local.cross_account_arns
+    }
+
+    actions = [
+      "s3:GetObject",
+      "s3:PutObject"
+    ]
+
+    resources = [
+      "${aws_s3_bucket.codepipeline.arn}/*",
+    ]
+  }
+}
+
+resource "aws_s3_bucket_policy" "codepipeline" {
+  bucket = aws_s3_bucket.codepipeline.id
+  policy = data.aws_iam_policy_document.codepipeline.json
+}
+
 
 ##########################
 ### LOAD BALANCER LOGS ###
@@ -112,4 +150,3 @@ resource "aws_s3_bucket_policy" "lb_logs_allow_logging" {
   bucket = aws_s3_bucket.lb_logs.id
   policy = data.aws_iam_policy_document.lb_logs_policy.json
 }
-
