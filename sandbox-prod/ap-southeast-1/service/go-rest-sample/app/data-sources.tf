@@ -5,7 +5,7 @@ locals {
   app = {
     instance_type       = "t4g.nano"
     port                = 8080
-    associate_public_ip = true
+    associate_public_ip = false
     artifact_kms_arn    = "arn:aws:kms:ap-southeast-1:199944304157:key/dfeca5b8-a63d-4ea9-9cd3-3e8b8d84498b"
     artifact_bucket     = "arn:aws:s3:::codepipeline-artifacts-b51cb22b9067cb07"
 

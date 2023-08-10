@@ -125,7 +125,7 @@ resource "aws_instance" "app" {
   associate_public_ip_address = local.app.associate_public_ip
   ebs_optimized               = true
   iam_instance_profile        = aws_iam_instance_profile.app.name
-  subnet_id                   = data.terraform_remote_state.vpc.outputs.public_subnets[0]
+  subnet_id                   = data.terraform_remote_state.vpc.outputs.app_subnets[0]
   user_data                   = file("ec2-app-init.sh")
 
   vpc_security_group_ids = [aws_security_group.app.id]
@@ -138,6 +138,7 @@ resource "aws_instance" "app" {
   }
 
   tags = {
-    Name = "${local.identifier}-app"
+    Name    = "${local.identifier}-app"
+    Service = local.identifier
   }
 }

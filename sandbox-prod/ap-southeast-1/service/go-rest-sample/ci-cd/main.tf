@@ -33,8 +33,8 @@ resource "aws_codedeploy_deployment_group" "release" {
   service_role_arn       = data.terraform_remote_state.global_cicd.outputs.codedeploy_role_arn
 
   ec2_tag_filter {
-    key   = "Name"
+    key   = "Service"
     type  = "KEY_AND_VALUE"
-    value = "${local.identifier}-app"
+    value = local.identifier
   }
 }

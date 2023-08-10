@@ -5,7 +5,7 @@ locals {
   app = {
     instance_type       = "t4g.nano"
     port                = 8080
-    associate_public_ip = true
+    associate_public_ip = false
 
     ami = {
       owners = [
