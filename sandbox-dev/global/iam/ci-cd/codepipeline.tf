@@ -91,4 +91,16 @@ data "aws_iam_policy_document" "codepipeline_policy" {
 
     resources = ["*"]
   }
+
+  // https://docs.aws.amazon.com/lambda/latest/dg/services-codepipeline.html#services-codepipeline-permissions
+  statement {
+    effect = "Allow"
+
+    actions = [
+      "lambda:ListFunctions",
+      "lambda:InvokeFunction",
+    ]
+
+    resources = ["*"]
+  }
 }

@@ -1,0 +1,33 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      golang: 1.20
+    commands:
+      - wget -O packer.zip ${packer_binary}
+      - unzip packer.zip
+  pre_build:
+    commands:
+      - go version
+      - ./packer version
+      - printenv
+  build:
+    commands:
+      - go test
+      - env GOOS=linux GOARCH=arm64 go build
+      - ./packer init deployments/create-ami.pkr.hcl
+      - ./packer build -color=false deployments/create-ami.pkr.hcl | tee build.log
+      - tail -n 5 build.log | grep  "$AWS_REGION:" > ${ami_filename}
+  post_build:
+    commands:
+      - echo "build completed"
+
+artifacts:
+  files:
+    - build.log
+    - ${ami_filename}
+
+cache:
+  paths:
+    - /go/pkg/mod/**/*
