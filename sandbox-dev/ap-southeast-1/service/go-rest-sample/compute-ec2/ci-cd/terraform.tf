@@ -4,7 +4,7 @@ terraform {
   backend "s3" {
     bucket         = "terraform-remote-backend-199944304157"
     dynamodb_table = "terraform-remote-backend-199944304157"
-    key            = "ap-southeast-1/service/go-rest-sample/ci-cd/terraform.tfstate"
+    key            = "ap-southeast-1/service/go-rest-sample/compute-ec2/ci-cd/terraform.tfstate"
     region         = "ap-southeast-1"
     encrypt        = true
   }
