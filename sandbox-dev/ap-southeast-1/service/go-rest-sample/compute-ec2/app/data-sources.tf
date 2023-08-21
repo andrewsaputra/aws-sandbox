@@ -19,9 +19,10 @@ locals {
   }
 
   alb = {
-    port     = 80
-    protocol = "HTTP"
-    internal = false
+    port       = 443
+    protocol   = "HTTPS"
+    internal   = false
+    ssl_policy = "ELBSecurityPolicy-TLS13-1-2-2021-06"
   }
 
   target_group = {
@@ -40,12 +41,13 @@ locals {
   }
 
 
-  remote_state_backend       = "s3"
-  remote_state_bucket        = "terraform-remote-backend-199944304157"
-  remote_state_region        = "ap-southeast-1"
-  remote_state_key_global_s3 = "global/s3/terraform.tfstate"
-  remote_state_key_vpc       = "ap-southeast-1/vpc/vpc-dev/terraform.tfstate"
-  remote_state_key_kms       = "ap-southeast-1/kms/terraform.tfstate"
+  remote_state_backend            = "s3"
+  remote_state_bucket             = "terraform-remote-backend-199944304157"
+  remote_state_region             = "ap-southeast-1"
+  remote_state_key_global_s3      = "global/s3/terraform.tfstate"
+  remote_state_key_global_route53 = "global/route53/terraform.tfstate"
+  remote_state_key_vpc            = "ap-southeast-1/vpc/vpc-dev/terraform.tfstate"
+  remote_state_key_kms            = "ap-southeast-1/kms/terraform.tfstate"
 
 }
 
@@ -60,6 +62,16 @@ data "terraform_remote_state" "global_s3" {
   config = {
     bucket = local.remote_state_bucket
     key    = local.remote_state_key_global_s3
+    region = local.remote_state_region
+  }
+}
+
+data "terraform_remote_state" "global_route53" {
+  backend = local.remote_state_backend
+
+  config = {
+    bucket = local.remote_state_bucket
+    key    = local.remote_state_key_global_route53
     region = local.remote_state_region
   }
 }
