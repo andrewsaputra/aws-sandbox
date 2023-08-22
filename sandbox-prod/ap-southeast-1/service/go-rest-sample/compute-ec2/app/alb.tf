@@ -73,8 +73,7 @@ resource "aws_lb" "app" {
 
 
   access_logs {
-    bucket = data.terraform_remote_state.global_s3.outputs.lb_logs_bucket
-    #prefix  = "lb-logs"
+    bucket  = data.terraform_remote_state.global_s3.outputs.lb_logs_bucket
     enabled = true
   }
 
@@ -87,11 +86,27 @@ resource "aws_lb_listener" "app" {
   load_balancer_arn = aws_lb.app.arn
   port              = local.alb.port
   protocol          = local.alb.protocol
-  #ssl_policy        = "ELBSecurityPolicy-2016-08"
-  #certificate_arn   = "arn:aws:iam::187416307283:server-certificate/test_cert_rab3wuqwgja25ct3n4jdj2tzu4"
+  ssl_policy        = local.alb.ssl_policy
+  certificate_arn   = data.terraform_remote_state.global_route53.outputs.acm_certificate_arn
 
   default_action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.app.arn
+  }
+}
+
+
+################
+### ROUTE 53 ###
+
+resource "aws_route53_record" "main" {
+  zone_id = data.terraform_remote_state.global_route53.outputs.zone_id
+  name    = local.identifier
+  type    = "A"
+
+  alias {
+    name                   = aws_lb.app.dns_name
+    zone_id                = aws_lb.app.zone_id
+    evaluate_target_health = true
   }
 }
