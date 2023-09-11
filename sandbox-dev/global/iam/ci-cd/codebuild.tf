@@ -16,11 +16,6 @@ resource "aws_iam_role" "codebuild" {
     name   = "permissions"
     policy = data.aws_iam_policy_document.codebuild_policy.json
   }
-
-  inline_policy {
-    name   = "packer-permissions"
-    policy = data.aws_iam_policy_document.codebuild_packer_policy.json
-  }
 }
 
 data "aws_iam_policy_document" "codebuild_assume_role" {
@@ -38,6 +33,7 @@ data "aws_iam_policy_document" "codebuild_assume_role" {
 
 data "aws_iam_policy_document" "codebuild_policy" {
   statement {
+    sid    = "CreateCloudwatchLogs"
     effect = "Allow"
 
     actions = [
@@ -52,6 +48,7 @@ data "aws_iam_policy_document" "codebuild_policy" {
   }
 
   statement {
+    sid    = "BasicEC2Permissions"
     effect = "Allow"
 
     actions = [
@@ -67,7 +64,28 @@ data "aws_iam_policy_document" "codebuild_policy" {
     resources = ["*"]
   }
 
+  # https://docs.aws.amazon.com/codebuild/latest/userguide/auth-and-access-control-iam-identity-based-access-control.html#customer-managed-policies-example-create-vpc-network-interface
   statement {
+    sid    = "CodebuildWithVPC"
+    effect = "Allow"
+
+    actions = [
+      "ec2:CreateNetworkInterfacePermission",
+    ]
+
+    condition {
+      test     = "StringEquals"
+      variable = "ec2:AuthorizedService"
+      values = [
+        "codebuild.amazonaws.com"
+      ]
+    }
+
+    resources = ["*"]
+  }
+
+  statement {
+    sid    = "AccessCodepipelineArtifacts"
     effect = "Allow"
 
     actions = [
@@ -79,11 +97,10 @@ data "aws_iam_policy_document" "codebuild_policy" {
       "${data.terraform_remote_state.global_s3.outputs.codepipeline_artifacts_arn}/*",
     ]
   }
-}
 
-# https://developer.hashicorp.com/packer/plugins/builders/amazon#iam-task-or-instance-role
-data "aws_iam_policy_document" "codebuild_packer_policy" {
+  # https://developer.hashicorp.com/packer/plugins/builders/amazon#iam-task-or-instance-role
   statement {
+    sid    = "PackerPermissions"
     effect = "Allow"
 
     actions = [
@@ -121,6 +138,34 @@ data "aws_iam_policy_document" "codebuild_packer_policy" {
       "ec2:StopInstances",
       "ec2:TerminateInstances",
       "ec2:DescribeVpcs",
+    ]
+
+    resources = ["*"]
+  }
+
+  # https://docs.aws.amazon.com/AmazonECR/latest/userguide/image-push.html#image-push-iam
+  statement {
+    sid    = "ECRPermissions"
+    effect = "Allow"
+
+    actions = [
+      "ecr:CompleteLayerUpload",
+      "ecr:GetAuthorizationToken",
+      "ecr:UploadLayerPart",
+      "ecr:InitiateLayerUpload",
+      "ecr:BatchCheckLayerAvailability",
+      "ecr:PutImage"
+    ]
+
+    resources = ["*"]
+  }
+
+  statement {
+    sid    = "AppRunnerPermissions"
+    effect = "Allow"
+
+    actions = [
+      "apprunner:StartDeployment",
     ]
 
     resources = ["*"]

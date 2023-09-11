@@ -1,17 +1,3 @@
-####################
-### DATA SOURCES ###
-
-locals {
-
-  artifact_bucket = "arn:aws:s3:::codepipeline-artifacts-b51cb22b9067cb07"
-
-  cross_account_users = [
-    "arn:aws:iam::199944304157:root",
-  ]
-
-}
-
-
 ###############################
 ### CODEDEPLOY SERVICE ROLE ###
 
