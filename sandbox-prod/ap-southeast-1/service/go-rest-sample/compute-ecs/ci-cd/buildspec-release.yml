@@ -1,0 +1,13 @@
+version: 0.2
+
+phases:
+  build:
+    commands:
+      - cp scripts/ecs-appspec-prod.yml appspec.yml
+  post_build:
+    commands:
+      - echo "build completed"
+
+artifacts:
+  files:
+    - appspec.yml

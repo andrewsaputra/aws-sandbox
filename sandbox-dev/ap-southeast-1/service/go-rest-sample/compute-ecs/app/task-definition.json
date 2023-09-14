@@ -1,0 +1,34 @@
+[
+    {
+      "name": "app",
+      "cpu": ${cpu_units},
+      "memory": ${memory_units},
+      "linuxParameters": {
+        "initProcessEnabled": true
+      },
+      "essential": true,
+      "image": "${ecr_image}",
+      "portMappings": [
+        {
+          "protocol": "tcp",
+          "hostPort": ${app_port},
+          "containerPort": ${app_port}
+        }
+      ],
+      "ulimits": [
+        {
+          "name": "nofile",
+          "softLimit": 1048576,
+          "hardLimit": 1048576
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "${log_group_name}",
+          "awslogs-region": "${log_group_region}",
+          "awslogs-stream-prefix": "${log_stream_prefix}"
+        }
+      }
+    }
+  ]

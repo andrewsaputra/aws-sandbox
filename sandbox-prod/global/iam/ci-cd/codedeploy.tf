@@ -17,7 +17,13 @@ resource "aws_iam_role" "codedeploy" {
 
   managed_policy_arns = [
     "arn:aws:iam::aws:policy/service-role/AWSCodeDeployRole",
+    "arn:aws:iam::aws:policy/AWSCodeDeployRoleForECS",
   ]
+
+  inline_policy {
+    name   = "permissions"
+    policy = data.aws_iam_policy_document.codedeploy_policy.json
+  }
 }
 
 data "aws_iam_policy_document" "codedeploy_assume_role" {
@@ -33,6 +39,20 @@ data "aws_iam_policy_document" "codedeploy_assume_role" {
   }
 }
 
+data "aws_iam_policy_document" "codedeploy_policy" {
+  statement {
+    sid    = "UseKMS"
+    effect = "Allow"
+
+    actions = [
+      "kms:Decrypt",
+    ]
+
+    resources = [
+      local.artifact_kms,
+    ]
+  }
+}
 
 #####################################
 ### CODEDEPLOY CROSS ACCOUNT ROLE ###
