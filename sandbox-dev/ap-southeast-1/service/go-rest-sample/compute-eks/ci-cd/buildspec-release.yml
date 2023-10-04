@@ -1,0 +1,31 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      golang: 1.20
+  pre_build:
+    commands:
+      - go version
+      - docker --version
+      - printenv
+  build:
+    commands:
+      - REV_TAG=rev_$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-10)
+      - docker build -t ${ecr_image}:$REV_TAG .
+      - docker tag ${ecr_image}:$REV_TAG ${ecr_image}:latest
+      - docker images
+      - aws ecr get-login-password --region ap-southeast-1 | docker login --username AWS --password-stdin ${ecr_auth_endpoint}
+      - docker push ${ecr_image}:$REV_TAG
+      - docker push ${ecr_image}:latest
+  post_build:
+    commands:
+      - echo "build completed" > build.log
+
+artifacts:
+  files:
+    - build.log
+
+cache:
+  paths:
+    - /go/pkg/mod/**/*
