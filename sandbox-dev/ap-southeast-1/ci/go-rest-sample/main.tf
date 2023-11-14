@@ -70,7 +70,7 @@ resource "aws_codebuild_project" "this" {
   }
 
   lifecycle {
-    ignore_changes = ["queued_timeout", "build_timeout"] # prevent state updates due to default values (unsupported for lambda containers)
+    ignore_changes = [queued_timeout, build_timeout] # prevent state updates due to default values (unsupported for lambda containers)
   }
 }
 
